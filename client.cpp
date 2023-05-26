@@ -1,10 +1,11 @@
 #include <iostream>
-#include <unistd.h>
+//#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <pthread.h>
+//#include <pthread.h>
+#include <thread>
 #include "socketConnection.h"
 #include "packetQueue.h"
 #include "packetBuffer.h"
@@ -13,24 +14,18 @@
 
 using namespace std;
 
-void *threadproc(void *arg);
+void threadproc(void *arg);
 packetBuffer *myPacketBuffer = new packetBuffer(2048);
 monitor *myMonitor = new monitor();
 
 int main(int argc, char *argv[]) {
-    string mediaIP;
-    string mediaPort;
+    string mediaIP("239.3.0.10");
+    string mediaPort("20000");
     string fecTimes;
-    string maxDelay;
-    string outputIP;
-    string outputPort;
-    unsigned char *sockRecvBuf = (unsigned char*)malloc(RECVBUFLEN * sizeof(unsigned char));
-
-    mediaIP = "239.255.0.1";
-    mediaPort = "20000";
-    outputIP = "127.0.0.1";
-    outputPort = "8000";
-    maxDelay = "500";
+    string maxDelay("500");
+    string outputIP("127.0.0.1");
+    string outputPort("8000");
+    char *sockRecvBuf = (char*)malloc(RECVBUFLEN * sizeof(char));
 
     if(argc == 2) {
         maxDelay = argv[1];
@@ -69,9 +64,10 @@ int main(int argc, char *argv[]) {
     FD_SET(mySocketUtility -> fecCol_Sockfd , &master);
 
     read_fds = master;
+        
+    //pthread_create(&tid , NULL , &threadproc , NULL);
 
-    pthread_t tid;
-    pthread_create(&tid , NULL , &threadproc , NULL);
+    thread t(threadproc, nullptr);
 
     for(;;) {
         myPacketBuffer -> updateFecQueue();
@@ -88,7 +84,14 @@ int main(int argc, char *argv[]) {
         if(FD_ISSET(mySocketUtility -> media_Sockfd , &read_fds)) {
             int bytes = 0;
             if((bytes = recv(mySocketUtility -> media_Sockfd , sockRecvBuf , RECVBUFLEN , 0)) < 0)
+            {
+                auto iError = WSAGetLastError();
+                if (iError == WSAEWOULDBLOCK)
+                    printf("recv failed with error: WSAEWOULDBLOCK\n");
+                else
+                    printf("recv failed with error: %ld\n", iError);
                 mySocketUtility -> ~socketUtility();
+            }
 
             myMonitor -> media -> updateStatus(sockRecvBuf);
             myPacketBuffer -> newMediaPacket(sockRecvBuf , bytes);
@@ -97,7 +100,9 @@ int main(int argc, char *argv[]) {
         if(FD_ISSET(mySocketUtility -> fecRow_Sockfd , &read_fds)) {
             int bytes = 0;
             if((bytes = recv(mySocketUtility -> fecRow_Sockfd , sockRecvBuf , RECVBUFLEN , 0)) < 0)
+            {
                 mySocketUtility -> ~socketUtility();
+            }
 
             myMonitor -> fecRow -> updateStatus(sockRecvBuf);
             myPacketBuffer -> newFecPacket(sockRecvBuf , bytes);
@@ -106,7 +111,9 @@ int main(int argc, char *argv[]) {
         if(FD_ISSET(mySocketUtility -> fecCol_Sockfd , &read_fds)) {
             int bytes = 0;
             if((bytes = recv(mySocketUtility -> fecCol_Sockfd , sockRecvBuf , RECVBUFLEN , 0)) < 0)
+            {
                 mySocketUtility -> ~socketUtility();
+            }
 
             myMonitor -> fecCol -> updateStatus(sockRecvBuf);
             myPacketBuffer -> newFecPacket(sockRecvBuf , bytes);
@@ -116,11 +123,11 @@ int main(int argc, char *argv[]) {
     return 0; //never reached
 }
 
-void *threadproc(void *arg) {
+void threadproc(void *arg) {
     while(1) {
-        sleep(5);
+        Sleep(0);
         myPacketBuffer -> bufferMonitor();
         myMonitor -> printMonitor();
     }
-    return 0;
+    return;
 }

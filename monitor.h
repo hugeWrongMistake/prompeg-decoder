@@ -4,7 +4,7 @@
 #include <iostream>
 #include <stdint.h>
 #include <string.h>
-#include <arpa/inet.h>
+#include <winsock.h>
 #include "packetParser.h"
 
 using namespace std;

@@ -185,7 +185,7 @@ class packetBuffer {
                         }
                         else {
                             temp = mediaQueue -> dequeue();
-                            if (send(sockfd , temp -> dataBuffer , temp -> dataUsed , 0) == -1);
+							if (send(sockfd, (char*)(temp->dataBuffer), temp->dataUsed, 0) == -1);
                                 //perror("send");
                             freeNodeToEmptyQueue(temp);
                             temp = mediaQueue -> head;

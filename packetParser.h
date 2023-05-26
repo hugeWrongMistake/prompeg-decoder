@@ -5,9 +5,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+//#include <unistd.h>
 #include <string.h>
-#include <arpa/inet.h>
+#include <winsock.h>
 #define CHECK_BIT(var, pos) !!((var) & (1 << (pos)))
 
 using namespace std;
@@ -48,6 +48,8 @@ using namespace std;
     |                             ....                              |
     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 */
+#pragma pack(push, 1)
+
 typedef struct rtpHeader_ {
     unsigned int cc:4;        /* CSRC count */
     unsigned int extension:1; /* header extension flag */
@@ -60,7 +62,7 @@ typedef struct rtpHeader_ {
     uint16_t sequenceNum;     /* sequence number */            /*IMPORTANT*/
     uint32_t ts;              /* timestamp */                  /*IMPORTANT*/
     uint32_t ssrc;            /* synchronization source */     /*GLOBAL INFO*/
-} __attribute__((packed)) rtpHeader_;
+}  rtpHeader_;
 
 typedef struct fecHeader_ {
     uint16_t SNBase;          /*SNBase Low bit*/               /*IMPORTANT*/
@@ -81,17 +83,17 @@ typedef struct fecHeader_ {
     uint8_t offset;           /*offset, Col=L Row=1*/
     uint8_t NA;               /*NA, Col=D Row=L*/
     uint8_t SNBaseExtension;  /*SNBase extension bit*/         /*always same*/
-} __attribute__((packed)) fecHeader_;
+}  fecHeader_;
 
 typedef struct rtpPacket_ {
     rtpHeader_ rtpHeader;
     uint8_t payload[1316];
-} __attribute__((packed)) rtpPacket_; /*1328 bytes*/
+}  rtpPacket_; /*1328 bytes*/
 
 typedef struct fecPacket_ {
     rtpHeader_ rtpHeader;
     fecHeader_ fecHeader;
     uint8_t payload[1316];
-} __attribute__((packed)) fecPacket_; /*1344 bytes*/
-
+}  fecPacket_; /*1344 bytes*/
+#pragma pack(pop)
 #endif
