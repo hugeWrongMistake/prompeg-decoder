@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
     else if(argc == 4) {
         mediaIP = argv[1];
         mediaPort = argv[2];
-        maxDelay = argv[5];
+        maxDelay = argv[3];
     }
     else if(argc == 5) {
         mediaIP = argv[1];
@@ -64,8 +64,6 @@ int main(int argc, char *argv[]) {
     FD_SET(mySocketUtility -> fecCol_Sockfd , &master);
 
     read_fds = master;
-        
-    //pthread_create(&tid , NULL , &threadproc , NULL);
 
     thread t(threadproc, nullptr);
 

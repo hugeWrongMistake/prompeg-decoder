@@ -6,7 +6,7 @@
 #include <sys/types.h>
 #include <Winsock2.h>
 #include <ws2tcpip.h>
-#pragma comment(lib, "wsock32.lib")
+#pragma comment(lib, "Ws2_32.lib")
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -81,11 +81,12 @@ class socketUtility {
         SOCKET listenSocket(const char* mediaIP , u_short mediaPort , int recvBufSize) {
             SOCKET sockfd;
 
-            sockaddr_in localAddr;
-            memset(&localAddr, 0, sizeof(localAddr));
+            sockaddr_in localAddr = { 0 };
+            // memset(&localAddr, 0, sizeof(localAddr));
+            
             localAddr.sin_family = AF_INET;
             localAddr.sin_addr.S_un.S_addr = INADDR_ANY;
-            localAddr.sin_port = mediaPort;
+            localAddr.sin_port = htons(mediaPort);
             
 
             if((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
@@ -94,7 +95,7 @@ class socketUtility {
             }
 
             int yes = 1;
-            if(setsockopt(sockfd , SOL_SOCKET , SO_REUSEADDR , (char*)&yes , sizeof(int)) == -1) {
+            if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char*)&yes, sizeof(int)) == -1) {
                 perror("setsockopt SO_REUSEADDR failed");
                 return -1;
             }

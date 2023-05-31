@@ -4,7 +4,8 @@
 #include <iostream>
 #include <stdint.h>
 #include <string.h>
-#include <winsock.h>
+#include <Winsock2.h>
+#include <Windows.h>
 #include "packetParser.h"
 
 using namespace std;
@@ -55,6 +56,10 @@ class monitor {
             recovered = newRecovered;
         }
         void printMonitor() {
+            static const HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+            std::cout.flush();
+            const COORD coord = { (SHORT)0, (SHORT)4 };
+            SetConsoleCursorPosition(hOut, coord);
             printf("media stream:\n");
             media -> printStatus();
             printf("    recovered/lost: %d/%d = %lf\n" , recovered , media -> lost , (100 * recovered / (double)media -> lost));
